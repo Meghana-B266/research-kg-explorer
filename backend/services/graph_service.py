@@ -125,13 +125,24 @@ async def get_full_graph(year_filter: Optional[int] = None) -> dict:
         MATCH (a:Author)-[:AUTHORED]->(p:Paper)
         WHERE p.title IS NOT NULL {year_clause}
         RETURN a.name as source, p.id as target, 'AUTHORED' as type
+        UNION
+        MATCH (p:Paper)-[:HAS_KEYWORD]->(k:Keyword)
+        WHERE p.title IS NOT NULL {year_clause}
+        RETURN p.id as source, k.name as target, 'HAS_KEYWORD' as type
+        UNION
+        MATCH (p:Paper)-[:USES_METHOD]->(m:Method)
+        WHERE p.title IS NOT NULL {year_clause}
+        RETURN p.id as source, m.name as target, 'USES_METHOD' as type
     """, year=year_filter)
 
     nodes = []
+    seen_ids = set()
+
     for row in papers:
         p = row["p"]
+        pid = p.get("id")
         nodes.append({
-            "id": p.get("id"),
+            "id": pid,
             "label": p.get("title", "")[:50],
             "type": "paper",
             "year": p.get("year"),
@@ -140,9 +151,22 @@ async def get_full_graph(year_filter: Optional[int] = None) -> dict:
             "keywords": row["keywords"],
             "methods": row["methods"],
         })
+        seen_ids.add(pid)
+
+        for name in row["authors"]:
+            if name and name not in seen_ids:
+                nodes.append({"id": name, "label": name, "type": "author"})
+                seen_ids.add(name)
+        for name in row["keywords"]:
+            if name and name not in seen_ids:
+                nodes.append({"id": name, "label": name, "type": "keyword"})
+                seen_ids.add(name)
+        for name in row["methods"]:
+            if name and name not in seen_ids:
+                nodes.append({"id": name, "label": name, "type": "method"})
+                seen_ids.add(name)
 
     return {"nodes": nodes, "edges": edges}
-
 
 async def get_paper_by_id(paper_id: str) -> dict | None:
     rows = await neo4j_client.run("""

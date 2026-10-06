@@ -62,3 +62,7 @@ app.include_router(timeline.router, prefix="/api/timeline", tags=["Timeline"])
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "1.0.0"}
+
+@app.get("/")
+async def root():
+    return {"message": "Research KG Explorer API is running. Visit /docs for API documentation."}

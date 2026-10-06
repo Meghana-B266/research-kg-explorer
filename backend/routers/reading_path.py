@@ -27,7 +27,7 @@ async def create_reading_path(req: ReadingPathRequest):
         RETURN p.id as id, p.title as title, p.year as year,
                p.abstract as abstract, p.pagerank as pagerank,
                collect(DISTINCT k.name) as keywords
-        ORDER BY p.pagerank DESC NULLS LAST
+        ORDER BY p.pagerank DESC 
         LIMIT $limit
     """, limit=req.max_papers * 2)
 

@@ -1,71 +1,21 @@
-# ==========================
 # Python
-# ==========================
-venv/
-.venv/
-env/
-ENV/
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
 
-__pycache__/
-*.py[cod]
-*$py.class
+# Environment secrets — never commit this
+backend/.env
 
-# Distribution
-build/
-dist/
-*.egg-info/
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# ==========================
-# Environment Variables
-# ==========================
-.env
-.env.local
-.env.*
-
-# ==========================
-# Node.js
-# ==========================
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Frontend build
-dist/
-build/
-
-# ==========================
-# IDE
-# ==========================
+# Editor / OS
 .vscode/
-.idea/
-
-# ==========================
-# OS Files
-# ==========================
 .DS_Store
 Thumbs.db
 
-# ==========================
-# Logs
-# ==========================
-*.log
-
-# ==========================
-# Database
-# ==========================
-*.sqlite3
-
-# ==========================
-# Misc
-# ==========================
-.cache/
+# Test scripts used during development (optional — remove if you want to keep them)
+backend/test_day*.py
+backend/sample.pdf
