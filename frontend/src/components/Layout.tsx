@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom"
 import {
-  Upload, FileText, Network, Users, ShieldCheck, Sparkles, Route as RouteIcon,
+  Upload, FileText, Network, Users, ShieldCheck, Sparkles, 
 } from "lucide-react"
 import clsx from "clsx"
 
@@ -11,7 +11,6 @@ const NAV_ITEMS = [
   { to: "/authors", label: "Author DNA", icon: Users },
   { to: "/analysis", label: "Analysis", icon: ShieldCheck },
   { to: "/hypothesis", label: "Hypothesis Engine", icon: Sparkles },
-  { to: "/reading-path", label: "Reading Path", icon: RouteIcon },
 ]
 
 export default function Layout({ children }: { children: React.ReactNode }) {

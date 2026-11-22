@@ -139,7 +139,10 @@ Return a JSON object with exactly these keys:
 - datasets (array of strings — named datasets used)
 - claims (array of strings — up to 5 direct quotes or close paraphrases of the paper's main results/claims,
   e.g. "Our model improves accuracy by 12% over the baseline")
-- citations (array of objects like {"title": "...", "year": 2020} — up to 15 papers this paper cites,
+- citations (array of objects like {"title": "...", "year": 2020} — up to 15 published papers this paper cites,
+  taken ONLY from its reference list. Do NOT include datasets, benchmarks, tools or websites
+  (e.g. "ImageNet data" or "PASCAL VOC datasets" are NOT citations). If the reference list is
+  not in the text, return an empty array [].)
   parsed from its reference list if present)
 - negative_results (array of strings — sentences describing failures, non-improvements, or limitations)
 - limitations (array of strings — explicitly stated limitations of the work)
@@ -270,28 +273,12 @@ many other things reference it, etc). Keep it to 3-5 sentences.""",
     )
 
 
-async def generate_reading_path(goal: str, papers: list) -> dict:
+async def generate_reading_path(goal: str, papers: list, max_papers: int = 10) -> dict:
     """Smart Reading Path Generator — ordered list from foundational to cutting-edge."""
     papers_summary = "\n".join(
         f"- [{p.get('year', '?')}] \"{p.get('title', 'Untitled')}\" "
         f"(pagerank={round(p.get('pagerank') or 0, 4)}, keywords={', '.join(p.get('keywords') or [])})"
         for p in papers
     )
-    return await chat_json(
-        system="""You build an ordered reading path through research papers for
-someone with a specific learning goal. Order from foundational (older, higher
-PageRank / more foundational keywords) to cutting-edge (newer, more
-specialized). Only choose from the papers provided — do not invent papers.
-
-Return JSON:
-{
-  "goal": "<restated goal>",
-  "reading_path": [
-    {"title": "<paper title from the list>", "year": <int or null>, "why": "<1 sentence on why this comes at this point in the path>"},
-    ...
-  ],
-  "note": "<optional 1-sentence caveat, e.g. if the graph doesn't fully cover the goal>"
-}""",
-        user=f"Learning goal: {goal}\n\nAvailable papers (already sorted by PageRank):\n{papers_summary}",
-        fallback={"goal": goal, "reading_path": [], "note": "Could not generate a reading path — LLM call failed."},
-    )
+    return await chat_json
+        

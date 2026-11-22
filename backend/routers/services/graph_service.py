@@ -191,7 +191,7 @@ async def get_paper_by_id(paper_id: str) -> dict | None:
 async def get_all_papers() -> list[dict]:
     rows = await neo4j_client.run("""
         MATCH (p:Paper)
-        WHERE p.title IS NOT NULL
+                WHERE p.title IS NOT NULL AND p.full_text IS NOT NULL
         OPTIONAL MATCH (a:Author)-[:AUTHORED]->(p)
         OPTIONAL MATCH (p)-[:HAS_KEYWORD]->(k:Keyword)
         RETURN p.id as id, p.title as title, p.year as year,

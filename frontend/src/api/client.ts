@@ -6,6 +6,8 @@ const api = axios.create({ baseURL: '/api' })
 export const uploadPaper  = (form: FormData)      => api.post('/papers/upload', form).then(r => r.data)
 export const listPapers   = ()                    => api.get('/papers/').then(r => r.data)
 export const getPaper     = (id: string)          => api.get(`/papers/${id}`).then(r => r.data)
+export const deletePaper    = (id: string)         => api.delete(`/papers/${id}`).then(r => r.data)
+export const clearAllPapers = ()                   => api.delete('/papers/').then(r => r.data)
 
 // ── Graph ────────────────────────────────────────────────────────────────────
 export const getGraph     = (year?: number)       => api.get('/graph/', { params: year ? { year } : {} }).then(r => r.data)
@@ -29,10 +31,6 @@ export const verifyClaimAdhoc = (claim: string, context: string) =>
 
 // ── Hypothesis ────────────────────────────────────────────────────────────────
 export const generateHypothesis = () => api.post('/hypothesis/generate').then(r => r.data)
-
-// ── Reading Path ──────────────────────────────────────────────────────────────
-export const generateReadingPath = (goal: string, max_papers = 10) =>
-  api.post('/reading-path/generate', { goal, max_papers }).then(r => r.data)
 
 // ── Timeline ──────────────────────────────────────────────────────────────────
 export const getYearlyStats = () => api.get('/timeline/stats').then(r => r.data)

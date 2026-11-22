@@ -1,13 +1,22 @@
 """
-Papers Router — upload PDFs, list papers, get paper details
+Papers Router — upload PDFs, list papers, get paper details, delete papers
 """
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
-from services.pdf_service import extract_text_from_pdf, find_citation_context
+
+# Uses the OCR version (scanned PDFs) if you added services/pdf_ocr.py,
+# otherwise falls back to the original extractor. Works either way.
+try:
+    from services.pdf_ocr import extract_text_from_pdf
+except ImportError:
+    from services.pdf_service import extract_text_from_pdf
+
+from services.pdf_service import find_citation_context
 from services.graph_service import save_paper, get_all_papers, get_paper_by_id, save_claim, save_negative_result
 from services.llm_service import (
     extract_paper_entities, verify_claim, detect_negative_results,
     analyze_citation_context
 )
+from database.neo4j_client import neo4j_client
 
 router = APIRouter()
 
@@ -80,7 +89,6 @@ async def _process_paper_analysis(paper_id: str, entities: dict, full_text: str)
             ctx = find_citation_context(full_text, cite_title)
             if ctx:
                 analysis = await analyze_citation_context(ctx, cite_title)
-                from database.neo4j_client import neo4j_client
                 await neo4j_client.run("""
                     MATCH (p:Paper {id: $pid})-[r:CITES]->(ref:Paper {title: $title})
                     SET r.intent = $intent, r.sentiment = $sentiment, r.explanation = $explanation
@@ -104,3 +112,46 @@ async def get_paper(paper_id: str):
     if not paper:
         raise HTTPException(404, "Paper not found")
     return paper
+
+
+# ─────────────────────────── DELETE FEATURE ───────────────────────────
+
+async def _remove_orphans():
+    """Clean up things that no longer belong to any paper after a delete."""
+    # authors / keywords / methods that are no longer linked to anything
+    await neo4j_client.run("""
+        MATCH (x)
+        WHERE (x:Author OR x:Keyword OR x:Method) AND NOT (x)--()
+        DETACH DELETE x
+    """)
+    # placeholder papers (created only because some paper cited them,
+    # so they have no full_text) that nothing links to any more
+    await neo4j_client.run("""
+        MATCH (p:Paper)
+        WHERE p.full_text IS NULL AND NOT (p)--()
+        DELETE p
+    """)
+
+
+@router.delete("/{paper_id}")
+async def delete_paper(paper_id: str):
+    """Delete one paper plus its claims and negative results, then tidy up leftovers."""
+    existing = await get_paper_by_id(paper_id)
+    if not existing:
+        raise HTTPException(404, "Paper not found")
+
+    await neo4j_client.run("""
+        MATCH (p:Paper {id: $id})
+        OPTIONAL MATCH (p)-[:MAKES_CLAIM]->(c:Claim)
+        OPTIONAL MATCH (p)-[:HAS_NEGATIVE_RESULT]->(n:NegativeResult)
+        DETACH DELETE c, n, p
+    """, id=paper_id)
+    await _remove_orphans()
+    return {"deleted": paper_id}
+
+
+@router.delete("/")
+async def clear_all_papers():
+    """Delete EVERYTHING in the graph (all papers, authors, keywords, ...)."""
+    await neo4j_client.run("MATCH (n) DETACH DELETE n")
+    return {"status": "cleared"}

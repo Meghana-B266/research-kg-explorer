@@ -1,11 +1,26 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { listPapers, getPaper } from "../api/client"
-import { FileText, Loader2, Calendar, Users, Tag, Cpu } from "lucide-react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { listPapers, getPaper, deletePaper, clearAllPapers } from "../api/client"
+import { FileText, Loader2, Calendar, Users, Tag, Cpu, Trash2 } from "lucide-react"
 import clsx from "clsx"
 
 export default function PapersPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+
+  // After any delete: unselect the paper and refresh every page's cached data
+  const refreshAll = () => {
+    setSelectedId(null)
+    queryClient.invalidateQueries()
+  }
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deletePaper(id),
+    onSuccess: refreshAll,
+  })
+  const clearMut = useMutation({
+    mutationFn: clearAllPapers,
+    onSuccess: refreshAll,
+  })
 
   const { data, isLoading } = useQuery({ queryKey: ["papers"], queryFn: listPapers })
   const papers: any[] = data?.papers || []
@@ -18,10 +33,22 @@ export default function PapersPage() {
 
   return (
     <div className="p-8 space-y-6 animate-fade-in">
-      <h1 className="text-2xl font-bold text-text flex items-center gap-2">
-        <FileText size={22} className="text-accent" /> Papers
-        <span className="text-sm font-normal text-muted ml-2">({papers.length})</span>
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-text flex items-center gap-2">
+          <FileText size={22} className="text-accent" /> Papers
+          <span className="text-sm font-normal text-muted ml-2">({papers.length})</span>
+        </h1>
+        <button
+          onClick={() => {
+            if (window.confirm("Delete ALL papers and graph data? This cannot be undone.")) clearMut.mutate()
+          }}
+          disabled={clearMut.isPending || papers.length === 0}
+          className="btn-ghost text-sm flex items-center gap-1.5 text-danger"
+        >
+          {clearMut.isPending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+          Clear all
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* List */}
@@ -75,6 +102,16 @@ export default function PapersPage() {
                   {paper.p?.title}
                 </h2>
                 <p className="text-xs text-muted mt-1">{paper.p?.year}</p>
+                <button
+                  onClick={() => {
+                    if (window.confirm("Delete this paper?")) deleteMut.mutate(selectedId!)
+                  }}
+                  disabled={deleteMut.isPending}
+                  className="btn-ghost text-sm flex items-center gap-1.5 text-danger mt-3 -ml-3"
+                >
+                  {deleteMut.isPending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  Delete this paper
+                </button>
               </div>
 
               {paper.p?.abstract && (

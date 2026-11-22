@@ -7,8 +7,6 @@ import GraphPage from "./pages/GraphPage"
 import AuthorsPage from "./pages/AuthorsPage"
 import AnalysisPage from "./pages/AnalysisPage"
 import HypothesisPage from "./pages/HypothesisPage"
-import ReadingPathPage from "./pages/ReadingPathPage"
-
 function App() {
   return (
     <BrowserRouter>
@@ -21,7 +19,6 @@ function App() {
           <Route path="/authors" element={<AuthorsPage />} />
           <Route path="/analysis" element={<AnalysisPage />} />
           <Route path="/hypothesis" element={<HypothesisPage />} />
-          <Route path="/reading-path" element={<ReadingPathPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>

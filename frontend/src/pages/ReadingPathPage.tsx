@@ -1,17 +1,21 @@
 import { useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { generateReadingPath } from "../api/client"
-import { Route as RouteIcon, Loader2, BookOpen } from "lucide-react"
+import { Route as RouteIcon, Loader2, BookOpen, AlertTriangle } from "lucide-react"
 
 export default function ReadingPathPage() {
   const [goal, setGoal] = useState("")
   const [maxPapers, setMaxPapers] = useState(10)
 
   const mut = useMutation({
-    mutationFn: () => generateReadingPath(goal, maxPapers),
+    // keep the number inside the range the server accepts (1-30)
+    mutationFn: () => generateReadingPath(goal, Math.min(30, Math.max(1, maxPapers || 10))),
   })
 
   const path: any[] = mut.data?.reading_path || []
+  const serverMessage: string | undefined =
+    (mut.error as any)?.response?.data?.detail?.[0]?.msg ||
+    (mut.error as any)?.response?.data?.detail
 
   return (
     <div className="p-8 space-y-6 animate-fade-in max-w-3xl">
@@ -36,7 +40,7 @@ export default function ReadingPathPage() {
           <label className="text-xs text-muted">Max papers</label>
           <input
             type="number"
-            min={3}
+            min={1}
             max={30}
             value={maxPapers}
             onChange={(e) => setMaxPapers(Number(e.target.value))}
@@ -52,10 +56,38 @@ export default function ReadingPathPage() {
               : <><RouteIcon size={14} /> Generate Reading Path</>}
           </button>
         </div>
+        {mut.isPending && (
+          <p className="text-xs text-muted">
+            This can take a minute or two on a laptop while the local AI model works…
+          </p>
+        )}
       </div>
 
+      {/* The request itself failed (backend down, server error, bad input) */}
+      {mut.isError && (
+        <div className="card border-danger/30 bg-danger/5 flex items-start gap-3">
+          <AlertTriangle size={18} className="text-danger shrink-0 mt-0.5" />
+          <div className="text-sm text-text space-y-1">
+            <p className="font-medium">The reading path request failed.</p>
+            <p className="text-muted text-xs">
+              {typeof serverMessage === "string" && serverMessage
+                ? serverMessage
+                : "Is the backend running on port 8000? Check its terminal for the error."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* The server answered with a message (e.g. no papers yet) */}
       {mut.data?.error && (
         <div className="card border-warn/30 bg-warn/5 text-sm text-text">{mut.data.error}</div>
+      )}
+
+      {/* The request worked but the AI gave no papers */}
+      {mut.isSuccess && !mut.data?.error && path.length === 0 && (
+        <div className="card border-warn/30 bg-warn/5 text-sm text-text">
+          {mut.data?.note || "No reading path was returned. Try again, or check that Ollama is running."}
+        </div>
       )}
 
       {path.length > 0 && (
