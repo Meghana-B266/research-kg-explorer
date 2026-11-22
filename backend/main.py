@@ -13,7 +13,6 @@ from routers import (
     authors,
     analysis,
     hypothesis,
-    reading_path,
     timeline,
 )
 from database.neo4j_client import neo4j_client
@@ -55,7 +54,6 @@ app.include_router(graph.router, prefix="/api/graph", tags=["Graph"])
 app.include_router(authors.router, prefix="/api/authors", tags=["Authors"])
 app.include_router(analysis.router, prefix="/api/analysis", tags=["Analysis"])
 app.include_router(hypothesis.router, prefix="/api/hypothesis", tags=["Hypothesis"])
-app.include_router(reading_path.router, prefix="/api/reading-path", tags=["Reading Path"])
 app.include_router(timeline.router, prefix="/api/timeline", tags=["Timeline"])
 
 
