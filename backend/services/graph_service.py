@@ -96,7 +96,7 @@ async def save_negative_result(paper_id: str, phrase: str, context: str, type_: 
         MATCH (p:Paper {id: $pid})
         CREATE (n:NegativeResult {phrase: $phrase, context: $ctx, type: $type})
         MERGE (p)-[:HAS_NEGATIVE_RESULT]->(n)
-    """, pid=paper_id, phrase=phrase, ctx=context, type_=type_)
+    """, pid=paper_id, phrase=phrase, ctx=context, type=type_)
 
 
 # ─── Read Operations ─────────────────────────────────────────────────────────
