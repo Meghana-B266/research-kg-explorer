@@ -3,13 +3,10 @@ Papers Router — upload PDFs, list papers, get paper details, delete papers
 """
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 
-# Uses the OCR version (scanned PDFs) if you added services/pdf_ocr.py,
-# otherwise falls back to the original extractor. Works either way.
-try:
-    from services.pdf_ocr import extract_text_from_pdf
-except ImportError:
-    from services.pdf_service import extract_text_from_pdf
-
+from services.pdf_service import (
+    extract_text_from_pdf,
+    find_citation_context
+)
 from services.pdf_service import find_citation_context
 from services.graph_service import save_paper, get_all_papers, get_paper_by_id, save_claim, save_negative_result
 from services.llm_service import (

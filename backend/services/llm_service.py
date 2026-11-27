@@ -273,12 +273,5 @@ many other things reference it, etc). Keep it to 3-5 sentences.""",
     )
 
 
-async def generate_reading_path(goal: str, papers: list, max_papers: int = 10) -> dict:
-    """Smart Reading Path Generator — ordered list from foundational to cutting-edge."""
-    papers_summary = "\n".join(
-        f"- [{p.get('year', '?')}] \"{p.get('title', 'Untitled')}\" "
-        f"(pagerank={round(p.get('pagerank') or 0, 4)}, keywords={', '.join(p.get('keywords') or [])})"
-        for p in papers
-    )
-    return await chat_json
+
         

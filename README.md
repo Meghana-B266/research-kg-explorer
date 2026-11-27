@@ -1,6 +1,6 @@
 # Research Knowledge Graph Explorer
 
-An AI-assisted, **fully local** knowledge graph system for research paper analysis. Upload a PDF, and the system extracts authors, keywords, methods, claims, and citations using a locally-hosted LLM (Ollama), then stores everything as a connected graph in Neo4j — so you can visually explore how your papers relate to each other, verify claims, detect buried negative results, generate cross-paper research hypotheses, and get a guided reading path toward a learning goal.
+An AI-assisted, **fully local** knowledge graph system for research paper analysis. Upload a PDF, and the system extracts authors, keywords, methods, claims, and citations using a locally-hosted LLM (Ollama), then stores everything as a connected graph in Neo4j — so you can visually explore how your papers relate to each other, verify claims, detect buried negative results, generate cross-paper research hypotheses.
 
 No cloud API, no subscription, no data ever leaves your machine.
 
@@ -14,7 +14,6 @@ No cloud API, no subscription, no data ever leaves your machine.
 - **Negative result detection** — surfaces admitted failures or null results that are easy to miss on a normal read.
 - **Citation context analysis** — classifies how a paper cites its references (supporting, contrasting, etc.).
 - **Hypothesis generation** — looks for under-connected clusters in the graph and proposes a research idea bridging them.
-- **PageRank-based reading path** — orders a set of papers from foundational to advanced, toward a stated learning goal.
 - **Author fingerprinting** — summarizes an author's dominant keywords/methods, and can compare two authors.
 - **Interactive graph visualization** — force-directed graph (Sigma.js), with node-type filtering, a year timeline slider, and an AI-generated plain-language explanation for any selected node.
 
@@ -48,7 +47,7 @@ Ollama LLM (:11434)     Neo4j Database (:7687)
 ```
 
 The backend is organized into:
-- `routers/` — HTTP endpoints, grouped by feature (papers, graph, authors, analysis, hypothesis, reading_path, timeline)
+- `routers/` — HTTP endpoints, grouped by feature (papers, graph, authors, analysis, hypothesis, timeline)
 - `services/` — the actual logic: `pdf_service.py` (text extraction), `llm_service.py` (all Ollama calls), `graph_service.py` (all Neo4j queries)
 - `database/` — Neo4j connection handling
 
@@ -133,8 +132,7 @@ Open `http://localhost:3000`.
 2. Wait for extraction to complete (can take 15 seconds to a few minutes, depending on your hardware).
 3. Explore the **Graph** page to see the paper connected to its authors, keywords, and methods.
 4. Use **Analysis** to review claim strength and negative results.
-5. Upload a few more papers, then try **Hypothesis Engine** and **Reading Path** — both work best with 3+ papers in the graph.
-
+5. Upload a few more papers and explore the Hypothesis Engine to discover potential research directions.
 ---
 
 ## Known Limitations

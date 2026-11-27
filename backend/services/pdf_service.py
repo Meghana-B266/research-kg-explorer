@@ -25,18 +25,6 @@ async def extract_text_from_pdf(file: UploadFile) -> tuple[str, str]:
     full_text = "\n\n".join(pages)
     return full_text, file_hash
 
-
-def chunk_text(text: str, chunk_size: int = 2000, overlap: int = 200) -> list[str]:
-    """Split text into overlapping chunks for processing"""
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
-        start = end - overlap
-    return chunks
-
-
 def find_citation_context(full_text: str, cited_title: str, window: int = 500) -> str:
     """Find the sentence(s) around a citation mention"""
     # Simple substring search — good enough for most papers
